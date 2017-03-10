@@ -39,7 +39,7 @@ import ro.fortsoft.pf4j.RuntimeMode;
  * @author gluu
  */
 public class ICGCGetPlugin extends Plugin {
-    private static final Logger logger = LoggerFactory.getLogger(ICGCGetPlugin.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ICGCGetPlugin.class);
 
     public ICGCGetPlugin(PluginWrapper wrapper) {
         super(wrapper);
@@ -63,6 +63,10 @@ public class ICGCGetPlugin extends Plugin {
 
         private static final String CLIENT_LOCATION = "client";
         private static final String CONFIG_FILE_LOCATION = "config-file-location";
+        private static final String DEFAULT_CLIENT = "/usr/bin  /icgc-get";
+        private static final String DEFAULT_CONFIGURATION = System.getProperty("user.home") + "/.icgc-get/config.yaml";
+        private String client;
+        private String configLocation;
 
         private Map<String, String> config;
 
@@ -72,6 +76,25 @@ public class ICGCGetPlugin extends Plugin {
 
         public Set<String> schemesHandled() {
             return new HashSet<>(Lists.newArrayList("icgc-get"));
+        }
+
+        /**
+         * This sets the s3cmd client and s3 config file based on the dockstore config file and defaults
+         */
+        private void setConfigAndClient() {
+            if (config == null) {
+                LOG.error("You are missing a dockstore config file");
+            }
+            if (config.containsKey(CLIENT_LOCATION)) {
+                setClient(config.get(CLIENT_LOCATION));
+            } else {
+                setClient(DEFAULT_CLIENT);
+            }
+            if (config.containsKey(CONFIG_FILE_LOCATION)) {
+                setConfigLocation(config.get(CONFIG_FILE_LOCATION));
+            } else {
+                setConfigLocation(DEFAULT_CONFIGURATION);
+            }
         }
 
         //
@@ -88,16 +111,8 @@ public class ICGCGetPlugin extends Plugin {
          * @return Whether download was successful or not
          */
         public boolean downloadFrom(String sourcePath, Path destination) {
-            String client = "/icgc-get/icgc-get";
-            String configLocation = "/.icgc-get/config.yaml";
             String fileID = null;
-
-            if (config.containsKey(CLIENT_LOCATION)) {
-                client = config.get(CLIENT_LOCATION);
-            }
-            if (config.containsKey(CONFIG_FILE_LOCATION)) {
-                configLocation = config.get(CONFIG_FILE_LOCATION);
-            }
+            setConfigAndClient();
 
             // ambiguous how to reference icgc-get files, rip off these kinds of headers
             String prefix = "icgc-get://";
@@ -110,27 +125,11 @@ public class ICGCGetPlugin extends Plugin {
             String downloadDir = destination.getParent().toFile().getAbsolutePath() + "/tmp";
             createDirectory(downloadDir);
             String command = client + " --config " + configLocation + " download " + fileID + " --output " + downloadDir;
-            Runtime rt = Runtime.getRuntime();
-            try {
-                Process ps = rt.exec(command);
-                try {
-                    ps.waitFor();
-                } catch (InterruptedException e) {
-                    System.err.println(e.getMessage());
-                }
-                java.util.Scanner s = new java.util.Scanner(ps.getErrorStream()).useDelimiter("\\A");
-                String errorString = s.hasNext() ? s.next() : "";
-                System.out.println("Error String: " + errorString);
-
-                java.util.Scanner s2 = new java.util.Scanner(ps.getInputStream()).useDelimiter("\\A");
-                String inputString = s2.hasNext() ? s2.next() : "";
-                System.out.println("Input String: " + inputString);
-            } catch (IOException e) {
-                logger.info("Could not download input file");
-                System.err.println(e.getMessage());
-                throw new RuntimeException("Could not download input file: ", e);
+            if (executeConsoleCommand(command)) {
+                moveFiles(downloadDir, destination);
+            } else {
+                LOG.error("Could not download file.");
             }
-            moveFiles(downloadDir, destination);
             return true;
         }
 
@@ -176,16 +175,62 @@ public class ICGCGetPlugin extends Plugin {
                     Path downloadedFileFileObj = Paths.get(path + "/" + file);
                     try {
                         Files.copy(downloadedFileFileObj, destination, StandardCopyOption.REPLACE_EXISTING);
-                        System.out.println("File copied to destination.");
+                        LOG.info("File copied to destination.");
                         return true;
                     } catch (IOException ioe) {
-                        System.err.println(ioe.getMessage());
+                        LOG.error(ioe.getMessage());
                         throw new RuntimeException("Could not move input file: ", ioe);
                     }
                 }
 
             }
             return false;
+        }
+
+        public void setClient(String client) {
+            this.client = client;
+        }
+
+        public void setConfigLocation(String configLocation) {
+            this.configLocation = configLocation;
+        }
+        /**
+         * Given a process, it will print out its stdout and stderr
+         *
+         * @param ps The process for print out
+         * @return True if there's no error message, false if there is an error message
+         */
+        private boolean printCommandConsole(Process ps) {
+            java.util.Scanner s = new java.util.Scanner(ps.getErrorStream()).useDelimiter("\\A");
+            String errorString = s.hasNext() ? s.next() : "";
+            LOG.warn("Error String: " + errorString);
+
+            java.util.Scanner s2 = new java.util.Scanner(ps.getInputStream()).useDelimiter("\\A");
+            String inputString = s2.hasNext() ? s2.next() : "";
+            LOG.info("Input String: " + inputString);
+            return (errorString.isEmpty());
+        }
+
+        /**
+         * Executes the string command given
+         *
+         * @param command The command to execute
+         * @return True if command was successfully execute without error, false otherwise.
+         */
+        private boolean executeConsoleCommand(String command) {
+            Runtime rt = Runtime.getRuntime();
+            try {
+                Process ps = rt.exec(command);
+                try {
+                    ps.waitFor();
+                } catch (InterruptedException e) {
+                    LOG.error("Command got interrupted: " + command + " " + e);
+                }
+                return printCommandConsole(ps);
+            } catch (IOException e) {
+                LOG.error("Could not execute command: " + command + " " + e);
+                throw new RuntimeException("Could not execute command: " + command);
+            }
         }
     }
 }

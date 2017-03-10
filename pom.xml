@@ -15,6 +15,7 @@
         <plugin.provider>Gary Luu</plugin.provider>
         <plugin.dependencies />
 	    <github.url>scm:git:git@github.com:dockstore/icgc-get-plugin.git</github.url>
+        <slf4j.version>1.7.24</slf4j.version>
     </properties>
 
     <distributionManagement>
@@ -180,12 +181,15 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.24</version>
+            <version>${slf4j.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.6.1</version>
+            <version>${slf4j.version}</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>ro.fortsoft.pf4j</groupId>

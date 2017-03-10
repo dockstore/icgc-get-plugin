@@ -6,7 +6,7 @@ Dockstore icgc file provisioning plugin.  Requires Docker installed.  Last teste
 The icgc-get plugin is capable of downloading files by calling out to an installed copy of the [icgc-get-client](http://docs.icgc.org/cloud/icgc-get).
 
 ```
-$ cat test.json
+$ cat test.icgc-get.json
 {
   "input_file": {
         "class": "File",
@@ -18,7 +18,7 @@ $ cat test.json
     }
 }
 
-$ dockstore tool launch --entry  quay.io/briandoconnor/dockstore-tool-md5sum  --json test.icgc.json
+$ dockstore tool launch --entry  quay.io/briandoconnor/dockstore-tool-md5sum  --json test.icgc-get.json
 Creating directories for run of Dockstore launcher at: ./datastore//launcher-2ebce330-2a44-4a3a-9d6d-55c152a5c38e
 Provisioning your input files to your local machine
 Downloading: #input_file from icgc-get://FI509397 into directory: /home/gluu/dockstore/dockstore-client/./datastore/launcher-423d8d83-e6b0-418d-8a09-0e29003ac55f/inputs/0aafce03-f893-4ce2-b97f-f2c36215f162
@@ -33,8 +33,8 @@ This plugin gets configuration information from the following structure in ~/.do
 
 ```
 [dockstore-icgc-get-plugin]
-client = /home/user/icgc-get/icgc-get
-config-file-location = /home/user/.icgc-get/config.yaml
+client = /usr/bin/icgc-get
+config-file-location = /home/usr/.icgc-get/config.yaml
 ```
 
 Set the client location to your own icgc-get client and also make sure that the configuration file is available at the config-file-location.
