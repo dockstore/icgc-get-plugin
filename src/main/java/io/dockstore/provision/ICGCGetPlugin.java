@@ -194,6 +194,7 @@ public class ICGCGetPlugin extends Plugin {
         public void setConfigLocation(String configLocation) {
             this.configLocation = configLocation;
         }
+
         /**
          * Given a process, it will print out its stdout and stderr
          *
@@ -203,11 +204,14 @@ public class ICGCGetPlugin extends Plugin {
         private boolean printCommandConsole(Process ps) {
             java.util.Scanner s = new java.util.Scanner(ps.getErrorStream()).useDelimiter("\\A");
             String errorString = s.hasNext() ? s.next() : "";
-            LOG.warn("Error String: " + errorString);
-
+            if (!errorString.isEmpty()) {
+                LOG.error(errorString);
+            }
             java.util.Scanner s2 = new java.util.Scanner(ps.getInputStream()).useDelimiter("\\A");
             String inputString = s2.hasNext() ? s2.next() : "";
-            LOG.info("Input String: " + inputString);
+            if (!inputString.isEmpty()) {
+                LOG.info(inputString);
+            }
             return (errorString.isEmpty());
         }
 
