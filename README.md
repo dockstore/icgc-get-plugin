@@ -32,7 +32,7 @@ Calling on plugin io.dockstore.provision.ICGCGetPlugin$ICGCGetProvision to provi
 This plugin gets configuration information from the following structure in ~/.dockstore/config
 
 ```
-[dockstore-icgc-get-plugin]
+[dockstore-file-icgc-get-plugin]
 client = /usr/bin/icgc-get
 config-file-location = /home/usr/.icgc-get/config.yaml
 ```

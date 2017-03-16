@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.dockstore</groupId>
-    <artifactId>dockstore-icgc-get-plugin</artifactId>
+    <artifactId>dockstore-file-icgc-get-plugin</artifactId>
     <packaging>jar</packaging>
-    <name>dockstore-icgc-get-plugin</name>
+    <name>dockstore-file-icgc-get-plugin</name>
     <version>0.0.4-SNAPSHOT</version>
 
     <properties>
