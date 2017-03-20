@@ -196,45 +196,30 @@ public class ICGCGetPlugin extends Plugin {
         }
 
         /**
-         * Given a process, it will print out its stdout and stderr
-         *
-         * @param ps The process for print out
-         * @return True if there's no error message, false if there is an error message
-         */
-        private boolean printCommandConsole(Process ps) {
-            java.util.Scanner s = new java.util.Scanner(ps.getErrorStream()).useDelimiter("\\A");
-            String errorString = s.hasNext() ? s.next() : "";
-            if (!errorString.isEmpty()) {
-                LOG.error(errorString);
-            }
-            java.util.Scanner s2 = new java.util.Scanner(ps.getInputStream()).useDelimiter("\\A");
-            String inputString = s2.hasNext() ? s2.next() : "";
-            if (!inputString.isEmpty()) {
-                LOG.info(inputString);
-            }
-            return (errorString.isEmpty());
-        }
-
-        /**
          * Executes the string command given
          *
          * @param command The command to execute
          * @return True if command was successfully execute without error, false otherwise.
          */
         private boolean executeConsoleCommand(String command) {
-            Runtime rt = Runtime.getRuntime();
+            ProcessBuilder builder = new ProcessBuilder(command.split(" ")).inheritIO();
             try {
-                Process ps = rt.exec(command);
+                Process ps = builder.start();
                 try {
-                    ps.waitFor();
+                    int errorCode = ps.waitFor();
+                    if (errorCode == 0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } catch (InterruptedException e) {
                     LOG.error("Command got interrupted: " + command + " " + e);
                 }
-                return printCommandConsole(ps);
             } catch (IOException e) {
                 LOG.error("Could not execute command: " + command + " " + e);
                 throw new RuntimeException("Could not execute command: " + command);
             }
+            return false;
         }
     }
 }
