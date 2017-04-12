@@ -29,6 +29,24 @@ Calling on plugin io.dockstore.provision.ICGCGetPlugin$ICGCGetProvision to provi
 
 ## Configuration
 
+Download the plugin with `dockstore plugin download` by adding an entry to ~/.dockstore/config similar to the following
+```
+[
+  {
+    "name": "dockstore-file-icgc-get-plugin",
+    "version": "0.0.4"
+  },
+  {
+    "name": "dockstore-file-s3-plugin",
+    "version": "0.0.3"
+  },
+  {
+    "name": "dockstore-file-synapse-plugin",
+    "version": "0.0.5"
+  }
+]
+```
+
 This plugin gets configuration information from the following structure in ~/.dockstore/config
 
 ```
