@@ -1,5 +1,6 @@
 # icgc-get-plugin
 Dockstore icgc file provisioning plugin.  Requires Docker installed.  Last tested with Docker version 17.03.0-ce, build 3a232c8
+No longer maintained since the icgc-get client has been archived and deprecated
 
 ## Usage
 
